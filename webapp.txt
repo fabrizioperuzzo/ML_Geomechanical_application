@@ -1,0 +1,96 @@
+#! python3.7
+# pip3.5 install dash --user
+# Ricorda di modificare nel file wsgi:
+# from flask_app import app
+# application = app.server
+
+
+
+########################################################################################################
+#
+# 1) Install plotly in verion 3.5 install dash
+# 2) Install a "newvenv1" with :  mkvirtualenv newvenv1 --python=/usr/bin/python3.6
+#
+#
+#
+#
+########################################################################################################
+
+
+
+
+
+
+
+
+
+
+from flask import Flask, render_template, url_for
+import sys
+import os
+
+
+
+
+
+## Check the environment we are working it
+print(sys.version)
+
+server = Flask(__name__)
+
+print(os.getcwd())
+
+
+
+#######################################
+############### PLOTLY   ################
+#######################################
+
+import pandas as pd
+import numpy as np
+
+df1 = pd.read_hdf('dati_rocce.h5', key='df1')
+
+import plotly.express as px
+import matplotlib
+
+size=(df1.dry_weight)**4
+fig = px.scatter(df1, x="UCS", y="elastic_mod", color="pred_class",
+                 size=size, hover_data=['UCS','name','type'],opacity=0.5,log_x=True,log_y=True)
+
+
+fig.update_xaxes(range=[0.7,2.3])
+fig.update_yaxes(showline=True, linewidth=0.1)
+
+
+fig.update_layout(title='Elastic modulus - UCS - Classification',
+    autosize=False,
+    width=1000,
+    height=500)
+
+# fig.show()
+
+
+#######################################
+############### DASH   ################
+#######################################
+
+
+import dash
+import dash_core_components as dcc
+import dash_html_components as html
+
+# app = dash.Dash(__name__, server=server)
+app = dash.Dash(__name__, server=server, routes_pathname_prefix ='/geodata/')
+
+app.layout = html.Div([
+    dcc.Graph(figure=fig)
+])
+
+
+if __name__ == '__main__':
+    app.run_server(debug=True)
+
+
+# app.run_server(debug=True, use_reloader=False)  # Turn off reloader if inside Jupyter
+
